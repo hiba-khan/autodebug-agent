@@ -14,9 +14,8 @@ from agents.planner import planner_agent
 from agents.fixer import fixer_agent
 from agents.validator import validator_agent
 
-# ============================================================
+
 # STEP 1: Define the State
-# ============================================================
 # State is like a shared notebook that all agents read and write to.
 # Every agent can see what previous agents wrote.
 # This is how they communicate with each other.
@@ -30,30 +29,29 @@ class AgentState(TypedDict):
     attempts: int           # how many fix attempts so far
     final_output: str       # the final result message
 
-# ============================================================
+
 # STEP 2: Define the Node Functions
-# ============================================================
 # Each node is one step in the pipeline.
 # A node receives the current state, does its job,
 # and returns ONLY the fields it wants to update.
 
 def run_code_node(state: AgentState) -> dict:
     """Runs the original broken code and captures the error."""
-    print("🔍 Running broken code...")
+    print("Running broken code...")
     result = run_code(state["original_code"])
     return {"error": result["stderr"]}
 
 
 def planner_node(state: AgentState) -> dict:
     """Sends code + error to planner agent for diagnosis."""
-    print("🧠 Planner analyzing the error...")
+    print(" Planner analyzing the error...")
     plan = planner_agent(state["original_code"], state["error"])
     return {"plan": plan}
 
 
 def fixer_node(state: AgentState) -> dict:
     """Sends code + plan to fixer agent to write the fix."""
-    print(f"🔧 Fixer attempting fix (attempt {state['attempts'] + 1})...")
+    print(f" Fixer attempting fix (attempt {state['attempts'] + 1})...")
     result = fixer_agent(
         state["original_code"],
         state["error"],
@@ -67,13 +65,13 @@ def fixer_node(state: AgentState) -> dict:
 
 def validator_node(state: AgentState) -> dict:
     """Runs the fixed code to check if it actually works."""
-    print("✅ Validator checking the fix...")
+    print(" Validator checking the fix...")
     result = validator_agent(state["fixed_code"])
     
     if result["validated"]:
         final = f"""
 ╔══════════════════════════════════════╗
-║         FIX SUCCESSFUL! ✅           ║
+║         FIX SUCCESSFUL!              ║
 ╚══════════════════════════════════════╝
 
 ORIGINAL CODE:
@@ -96,9 +94,7 @@ ATTEMPTS NEEDED: {state['attempts']}
     }
 
 
-# ============================================================
 # STEP 3: Define the Decision Function
-# ============================================================
 # This is the "brain" of the loop.
 # After validator runs, should we stop or try again?
 
@@ -119,9 +115,7 @@ def should_continue(state: AgentState) -> str:
         return "fix_again"
 
 
-# ============================================================
 # STEP 4: Build the Graph
-# ============================================================
 # This is where we connect all nodes together
 # like drawing arrows between boxes in a flowchart.
 
@@ -156,9 +150,7 @@ def build_pipeline():
     return graph.compile()
 
 
-# ============================================================
 # STEP 5: Run function
-# ============================================================
 
 def run_pipeline(broken_code: str) -> str:
     """Main function to run the full AutoDebug pipeline."""
