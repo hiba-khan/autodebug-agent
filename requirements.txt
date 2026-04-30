@@ -1,0 +1,6 @@
+langgraph
+langchain-community
+streamlit
+psycopg2-binary
+python-dotenv
+ollama
